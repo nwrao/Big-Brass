@@ -35,7 +35,9 @@ def damage_types(cur, conn):
     for item in List:
         cur.execute("INSERT OR IGNORE INTO DamageTypes (Damage_id, TypeName) VALUES (?, ?)", (count, item))
         count +=1
+    print("DamageTypes complete!")
     conn.commit()
+
 
 def weapon_damages(FullData, cur, conn):
     cur.execute("SELECT COUNT(Damage_id) FROM DamageTypes")
@@ -63,6 +65,8 @@ def weapon_damages(FullData, cur, conn):
                         (?, ?, ?, ?, ?, ?, ?)""", 
                         (count, Physical, Magic, Fire, Light, Holy, x))
             count +=1
+        if count == 300:
+            print("WeaponDifferentDamages Complete!")
     conn.commit()
 
 
@@ -94,13 +98,15 @@ def add_weapons(FullData, cur, conn):
             cur.execute("""SELECT Damage_id FROM DamageTypes WHERE TypeName = ?""",(damageName,))
             damNam = cur.fetchone()
             damNam = damNam[0]
-            print(x)
+            
         
             cur.execute("""INSERT OR IGNORE INTO Elden_Ring 
                         (id, WeaponName, MaxDamageType, WeaponDamage) 
                         Values (?,?,?,?)""", 
                         (count, name, damNam,count))
             count += 1
+        if count == 300:
+            print("Elden_Ring Complete!")
     conn.commit()
 
 cur.execute("CREATE TABLE IF NOT EXISTS Elden_Ring (id INTEGER PRIMARY KEY, WeaponName TEXT, MaxDamageType Text, WeaponDamage Integer)")

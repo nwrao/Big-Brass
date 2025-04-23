@@ -17,7 +17,7 @@ def countTypesMHW(cur):
     results = cur.fetchall()
     return results
 
-def createPieChart(results):
+def createPieChartMHW(results):
     labels = []
     counts = []
     for item in results:
@@ -40,7 +40,7 @@ def averageDamagesMHW(cur):
     results = cur.fetchall()
     return results
 
-def createBarChart(results):
+def createBarChartMHW(results):
     types = []
     averages = []
     for item in results:
@@ -50,6 +50,7 @@ def createBarChart(results):
     plt.figure(figsize=(10, 6))
     plt.barh(types, averages, color='orange')
     plt.xlabel("Average Attack Power")
+    plt.ylabel("Weapon Types")
     plt.title("Average Attack Power by MHW Weapon Type")
     plt.tight_layout()
     plt.show()
@@ -134,11 +135,33 @@ def createBarGraphElden(averages):
     plt.ylabel("Damage Types")
     plt.show()
 
+def creatBarBoth(ave1, ave2):
+    names = []
+    vals = []
+    for item in ave1:
+        names.append(item[1])
+        vals.append(item[0])
+    for item in ave2:
+        vals.append(item[0])
+        names.append(item[1])
+            
+    plt.figure(figsize=(10, 6))
+    plt.barh(vals, names, color='Pink')
+    plt.xlabel("Average Attack Power or Damage")
+    plt.ylabel("Weapon or Damage Types")
+    plt.title("Average Attack Power between both APIs")
+    plt.tight_layout()
+    plt.show()
+
+
+    
+
 x = countDamagesElden(cur)
 y = averageDamagesElden(cur)
 createPieChartElden(x)
 createBarGraphElden(y)
 type_counts = countTypesMHW(cur)
-createPieChart(type_counts)
+createPieChartMHW(type_counts)
 avg_attack = averageDamagesMHW(cur)
-createBarChart(avg_attack)
+createBarChartMHW(avg_attack)
+creatBarBoth(y, avg_attack)
