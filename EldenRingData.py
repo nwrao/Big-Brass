@@ -7,7 +7,7 @@ baseUrl = "https://eldenring.fanapis.com/api/weapons?limit=100"
 
 
 dir = os.path.dirname(__file__)+ os.sep
-conn = sqlite3.connect(dir+'games1.sqlite')
+conn = sqlite3.connect(dir+'Games.sqlite')
 cur = conn.cursor()
 
 
