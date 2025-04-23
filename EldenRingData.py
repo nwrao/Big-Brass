@@ -33,7 +33,7 @@ def damage_types(cur, conn):
     count = 0
     List = ["Phy", "Mag", "Fire", "Ligt", "Holy"]
     for item in List:
-        cur.execute("INSERT OR IGNORE INTO DamageTypes (Damage_id, Type) VALUES (?, ?)", (count, item))
+        cur.execute("INSERT OR IGNORE INTO DamageTypes (Damage_id, TypeName) VALUES (?, ?)", (count, item))
         count +=1
     conn.commit()
 
@@ -91,32 +91,27 @@ def add_weapons(FullData, cur, conn):
             Holy =  (item['attack'][4]['amount'],item['attack'][4]['name'])
             x = sorted([Physical, Magic, Fire, Light, Holy], key=lambda t: t[0])
             damageName = x[4][1]
-            cur.execute("""SELECT Damage_id FROM DamageTypes WHERE Type = ?""",(damageName,))
+            cur.execute("""SELECT Damage_id FROM DamageTypes WHERE TypeName = ?""",(damageName,))
             damNam = cur.fetchone()
             damNam = damNam[0]
             print(x)
         
             cur.execute("""INSERT OR IGNORE INTO Elden_Ring 
-                        (id, WeaponName, MaxDamageName, WeaponDamage) 
+                        (id, WeaponName, MaxDamageType, WeaponDamage) 
                         Values (?,?,?,?)""", 
-                        (count, name, damNam,currentRing))
+                        (count, name, damNam,count))
             count += 1
     conn.commit()
 
-cur.execute("CREATE TABLE IF NOT EXISTS Elden_Ring (id INTEGER PRIMARY KEY, WeaponName TEXT, MaxDamageName Text, WeaponDamage Integer)")
+cur.execute("CREATE TABLE IF NOT EXISTS Elden_Ring (id INTEGER PRIMARY KEY, WeaponName TEXT, MaxDamageType Text, WeaponDamage Integer)")
 
 
 cur.execute("CREATE TABLE IF NOT EXISTS WeaponsDifferentDamages (Weapon_id INTEGER PRIMARY KEY, Physical INTEGER, Magic INTEGER, Fire INTEGER, Light INTEGER, Holy Integer, MaxDamage INTEGER)")
 
-cur.execute("CREATE TABLE IF NOT EXISTS DamageTypes (Damage_id INTEGER PRIMARY KEY, Type Text)")
+cur.execute("CREATE TABLE IF NOT EXISTS DamageTypes (Damage_id INTEGER PRIMARY KEY, TypeName Text)")
 
 FullData = createDataset(baseUrl)
 add_weapons(FullData, cur, conn)
 weapon_damages(FullData, cur, conn)
 damage_types( cur, conn)
-
-
-
-
-
 
