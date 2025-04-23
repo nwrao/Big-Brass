@@ -134,6 +134,24 @@ def createBarGraphElden(averages):
     plt.ylabel("Damage Types")
     plt.show()
 
+def creatBarBoth(ave1, ave2):
+    names = []
+    vals = []
+    for item in ave1:
+        names.append(item[1])
+        vals.append(item[0])
+    for item in ave2:
+        vals.append(item[0])
+        names.append(item[1])
+            
+    plt.figure(figsize=(10, 6))
+    plt.barh(vals, names, color='Pink')
+    plt.xlabel("Average Attack Power or Damage")
+    plt.ylabel("Weapon or Damage Types")
+    plt.title("Average Attack Power between both APIs")
+    plt.tight_layout()
+    plt.show()
+
 def writeToFile(cur):
     path = os.path.join(dir, "calculations.txt")
     with open(path, "w") as f:
@@ -184,11 +202,15 @@ def writeToFile(cur):
         for val, typ in avg_dmg:
             f.write(f"- {typ}: {val:.2f} average damage\n")
 
-        f.write("\Calculation 5: Average Attack Powers Between Games\n")
+        f.write("\nCalculation 5: Average Attack Powers Between Games\n")
         f.write("------------------------------------\n")
-
-    
-
+        f.write("Compares average weapon damage types from Elden Ring with average attack powers from Monster Hunter World.\n\n")
+        f.write("Elden Ring Averages:\n")
+        for val, typ in avg_dmg:
+            f.write(f"- {typ}: {val:.2f} average damage\n")
+        f.write("\nMonster Hunter World Averages:\n")
+        for wt, avg in mhw_avg:
+            f.write(f"- {wt}: {avg:.2f} average attack\n")
 
 x = countDamagesElden(cur)
 y = averageDamagesElden(cur)
@@ -198,5 +220,6 @@ type_counts = countTypesMHW(cur)
 createPieChart(type_counts)
 avg_attack = averageDamagesMHW(cur)
 createBarChart(avg_attack)
+creatBarBoth(y, avg_attack)
 
 writeToFile(cur)
