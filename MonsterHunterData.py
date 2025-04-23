@@ -4,6 +4,9 @@ import json
 import os
 
 url = "https://mhw-db.com/weapons"
+dir = os.path.dirname(__file__)+ os.sep
+conn = sqlite3.connect(dir+'Games.sqlite')
+cur = conn.cursor()
 
 def fetch_mhw_weapon_data():
     response = requests.get(url)
@@ -12,9 +15,6 @@ def fetch_mhw_weapon_data():
     else:
         print(f"Failed to fetch data: {response.status_code}")
         return None
-
-def connect_db(db_name="Games.db"):
-    return sqlite3.connect(db_name)
 
 def create_tables(conn):
     cursor = conn.cursor()
@@ -135,14 +135,13 @@ def count_weapons_in_db(conn):
     cursor.execute('SELECT COUNT(*) FROM mhw_weapons')
     return cursor.fetchone()[0]
 
-if __name__ == "__main__":
-    conn = connect_db()
-    create_tables(conn)
 
-    all_weapon_data = fetch_mhw_weapon_data()
-    if all_weapon_data:
-        process_and_insert_data(all_weapon_data, conn)
+create_tables(conn)
 
-    total = count_weapons_in_db(conn)
-    print(f"Finished! Total weapons in database: {total}")
-    conn.close()
+all_weapon_data = fetch_mhw_weapon_data()
+if all_weapon_data:
+    process_and_insert_data(all_weapon_data, conn)
+
+total = count_weapons_in_db(conn)
+print(f"Finished! Total weapons in database: {total}")
+conn.close()
