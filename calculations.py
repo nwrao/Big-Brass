@@ -172,7 +172,7 @@ def writeToFile(cur):
             f.write(f"- {wt}: {count} weapons\n")
 
 
-        f.write("\nCalculation 2:MHW Average Attack by Weapon Type\n")
+        f.write("\nCalculation 2: MHW Average Attack by Weapon Type\n")
         f.write("------------------------------------\n")
         f.write("Calculates the average attack power of weapons in each weapon class in Monster Hunter World.\n\n")
         cur.execute('''
@@ -186,31 +186,33 @@ def writeToFile(cur):
             f.write(f"- {wt}: {avg:.2f} average attack\n")
 
 
-        f.write("\Calculation 3:. Elden Ring Weapon Damage Type Distribution\n")
-        f.write("---------------------------------------------\n")
+        f.write("\nCalculation 3: Elden Ring Weapon Damage Type Distribution\n")
+        f.write("---------------------------------------------------------\n")
         f.write("Counts how many weapons use each primary damage type in Elden Ring.\n\n")
-        damage_types = ['Phy', 'Mag', 'Fire', 'Ligt', 'Holy']
         damage_count = countDamagesElden(cur)
         for dmg in damage_count:
             f.write(f"- {dmg[0]}: {dmg[1]} weapons\n")
 
         
-        f.write("\Calculation 4: Elden Ring Average Damage by Type\n")
-        f.write("------------------------------------\n")
+        f.write("\nCalculation 4: Elden Ring Average Damage by Type\n")
+        f.write("------------------------------------------------\n")
         f.write("Computes the average maximum damage value per damage type in Elden Ring.\n\n")
         avg_dmg = averageDamagesElden(cur)
-        for val, typ in avg_dmg:
+        for typ, val in avg_dmg:
             f.write(f"- {typ}: {val:.2f} average damage\n")
 
         f.write("\nCalculation 5: Average Attack Powers Between Games\n")
-        f.write("------------------------------------\n")
+        f.write("--------------------------------------------------\n")
         f.write("Compares average weapon damage types from Elden Ring with average attack powers from Monster Hunter World.\n\n")
+        
         f.write("Elden Ring Averages:\n")
-        for val, typ in avg_dmg:
+        for typ, val in avg_dmg:
             f.write(f"- {typ}: {val:.2f} average damage\n")
+        
         f.write("\nMonster Hunter World Averages:\n")
         for wt, avg in mhw_avg:
             f.write(f"- {wt}: {avg:.2f} average attack\n")
+
 
 x = countDamagesElden(cur)
 y = averageDamagesElden(cur)
