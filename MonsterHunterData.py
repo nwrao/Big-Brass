@@ -5,29 +5,28 @@ import os
 
 url = "https://mhw-db.com/weapons"
 
-def fetch_mhw_weapon_data(offset=0, limit=25):
+def fetch_mhw_weapon_data():
     response = requests.get(url)
     if response.status_code == 200:
-        full_data = response.json()
-        return full_data[offset:offset + limit]
+        return response.json()
     else:
         print(f"Failed to fetch data: {response.status_code}")
         return None
 
-def connect_db(db_name="weapons.db"):
+def connect_db(db_name="Games.db"):
     return sqlite3.connect(db_name)
 
 def create_tables(conn):
     cursor = conn.cursor()
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS mhw_weapon_types (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY,
             name TEXT UNIQUE
         )
     ''')
     cursor.execute('''
         CREATE TABLE IF NOT EXISTS mhw_weapons (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            id INTEGER PRIMARY KEY,
             name TEXT UNIQUE,
             attack INTEGER,
             weapon_type_id INTEGER,
@@ -53,7 +52,13 @@ def insert_weapon_types(conn, weapon_types):
 
 def insert_weapons(conn, weapons):
     cursor = conn.cursor()
+    inserted_count = 0
+
     for weapon in weapons:
+        cursor.execute('SELECT id FROM mhw_weapons WHERE name = ?', (weapon["name"],))
+        if cursor.fetchone():
+            continue
+
         cursor.execute('SELECT id FROM mhw_weapon_types WHERE name = ?', (weapon["type"],))
         weapon_type_id = cursor.fetchone()
         if weapon_type_id:
@@ -63,7 +68,7 @@ def insert_weapons(conn, weapons):
             weapon_type_id = cursor.lastrowid
 
         cursor.execute('''
-            INSERT OR IGNORE INTO mhw_weapons (
+            INSERT INTO mhw_weapons (
                 name, attack, weapon_type_id,
                 rarity, damage_type,
                 element_type, element_damage, elderseal
@@ -80,7 +85,13 @@ def insert_weapons(conn, weapons):
                 weapon["elderseal"]
             )
         )
+        inserted_count += 1
+
+        if inserted_count >= 25:
+            break
+
     conn.commit()
+    print(f"Inserted {inserted_count} new weapons into the database.")
 
 def process_and_insert_data(weapon_data, conn):
     weapon_types = []
@@ -118,7 +129,6 @@ def process_and_insert_data(weapon_data, conn):
 
     insert_weapon_types(conn, weapon_types)
     insert_weapons(conn, weapons)
-    print(f"Inserted {len(weapons)} weapons into the database.")
 
 def count_weapons_in_db(conn):
     cursor = conn.cursor()
@@ -129,16 +139,9 @@ if __name__ == "__main__":
     conn = connect_db()
     create_tables(conn)
 
-    offset = 0
-    limit = 25
-
-    while True:
-        weapon_data = fetch_mhw_weapon_data(offset=offset, limit=limit)
-        if not weapon_data:
-            print("No more data to fetch.")
-            break
-        process_and_insert_data(weapon_data, conn)
-        offset += limit
+    all_weapon_data = fetch_mhw_weapon_data()
+    if all_weapon_data:
+        process_and_insert_data(all_weapon_data, conn)
 
     total = count_weapons_in_db(conn)
     print(f"Finished! Total weapons in database: {total}")
