@@ -3,10 +3,56 @@ import os
 import matplotlib
 import matplotlib.pyplot as plt
 
-
-dir = os.path.dirname(__file__)+ os.sep
-conn = sqlite3.connect(dir+'Games.sqlite')
+dir = os.path.dirname(__file__) + os.sep
+conn = sqlite3.connect(dir + "Games.sqlite")
 cur = conn.cursor()
+
+def countTypesMHW(cur):
+    cur.execute('''
+        SELECT wt.name, COUNT(w.id)
+        FROM mhw_weapons w
+        JOIN mhw_weapon_types wt ON w.weapon_type_id = wt.id
+        GROUP BY w.weapon_type_id
+    ''')
+    results = cur.fetchall()
+    return results
+
+def createPieChart(results):
+    labels = []
+    counts = []
+    for item in results:
+        labels.append(item[0])
+        counts.append(item[1])
+
+    plt.figure(figsize=(8, 8))
+    plt.pie(counts, labels=labels, autopct='%1.1f%%', startangle=170)
+    plt.title("Distribution of MHW Weapons by Type")
+    plt.axis('equal')
+    plt.show()
+
+def averageDamagesMHW(cur):
+    cur.execute('''
+        SELECT wt.name, AVG(w.attack)
+        FROM mhw_weapons w
+        JOIN mhw_weapon_types wt ON w.weapon_type_id = wt.id
+        GROUP BY w.weapon_type_id
+    ''')
+    results = cur.fetchall()
+    return results
+
+def createBarChart(results):
+    types = []
+    averages = []
+    for item in results:
+        types.append(item[0])
+        averages.append(item[1])
+    
+    plt.figure(figsize=(10, 6))
+    plt.barh(types, averages, color='orange')
+    plt.xlabel("Average Attack Power")
+    plt.title("Average Attack Power by MHW Weapon Type")
+    plt.tight_layout()
+    plt.show()
 
 
 def countDamagesElden(cur):
@@ -31,7 +77,7 @@ def countDamagesElden(cur):
     sorted_d = sorted(d.items(), key = lambda x:x[1], reverse = True)
     return sorted_d
 
-def createPieChart(counts):
+def createPieChartElden(counts):
     names = []
     vals = []
     for item in counts:
@@ -73,7 +119,7 @@ def averageDamagesElden(cur):
     sorted_d = sorted(d.items(), key = lambda x:x[1], reverse = True)
     return sorted_d
     
-def createBarGraph(averages):
+def createBarGraphElden(averages):
     names = []
     vals = []
     for item in averages:
@@ -88,7 +134,69 @@ def createBarGraph(averages):
     plt.ylabel("Damage Types")
     plt.show()
 
+def writeToFile(cur):
+    path = os.path.join(dir, "calculations.txt")
+    with open(path, "w") as f:
+        f.write("Calculation Summary\n")
+        f.write("============================\n\n")
+
+        f.write("Calculation 1: MHW Weapon Type Distribution\n")
+        f.write("--------------------------------\n")
+        f.write("Counts how many weapons exist for each weapon type in Monster Hunter World.\n\n")
+        cur.execute('''
+            SELECT wt.name, COUNT(w.id)
+            FROM mhw_weapons w
+            JOIN mhw_weapon_types wt ON w.weapon_type_id = wt.id
+            GROUP BY w.weapon_type_id
+        ''')
+        mhw_counts = cur.fetchall()
+        for wt, count in mhw_counts:
+            f.write(f"- {wt}: {count} weapons\n")
+
+
+        f.write("\nCalculation 2:MHW Average Attack by Weapon Type\n")
+        f.write("------------------------------------\n")
+        f.write("Calculates the average attack power of weapons in each weapon class in Monster Hunter World.\n\n")
+        cur.execute('''
+            SELECT wt.name, AVG(w.attack)
+            FROM mhw_weapons w
+            JOIN mhw_weapon_types wt ON w.weapon_type_id = wt.id
+            GROUP BY w.weapon_type_id
+        ''')
+        mhw_avg = cur.fetchall()
+        for wt, avg in mhw_avg:
+            f.write(f"- {wt}: {avg:.2f} average attack\n")
+
+
+        f.write("\Calculation 3:. Elden Ring Weapon Damage Type Distribution\n")
+        f.write("---------------------------------------------\n")
+        f.write("Counts how many weapons use each primary damage type in Elden Ring.\n\n")
+        damage_types = ['Phy', 'Mag', 'Fire', 'Ligt', 'Holy']
+        damage_count = countDamagesElden(cur)
+        for dmg in damage_count:
+            f.write(f"- {dmg[0]}: {dmg[1]} weapons\n")
+
+        
+        f.write("\Calculation 4: Elden Ring Average Damage by Type\n")
+        f.write("------------------------------------\n")
+        f.write("Computes the average maximum damage value per damage type in Elden Ring.\n\n")
+        avg_dmg = averageDamagesElden(cur)
+        for val, typ in avg_dmg:
+            f.write(f"- {typ}: {val:.2f} average damage\n")
+
+        f.write("\Calculation 5: Average Attack Powers Between Games\n")
+        f.write("------------------------------------\n")
+
+    
+
+
 x = countDamagesElden(cur)
 y = averageDamagesElden(cur)
-createPieChart(x)
-createBarGraph(y)
+createPieChartElden(x)
+createBarGraphElden(y)
+type_counts = countTypesMHW(cur)
+createPieChart(type_counts)
+avg_attack = averageDamagesMHW(cur)
+createBarChart(avg_attack)
+
+writeToFile(cur)
